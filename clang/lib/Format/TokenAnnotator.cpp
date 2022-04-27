@@ -2748,8 +2748,19 @@ void TokenAnnotator::calculateFormattingInformation(AnnotatedLine &Line) {
       if (Prev->is(BK_BracedInit) && Prev->opensScope())
         Current->SpacesRequiredBefore =
             (Style.Cpp11BracedListStyle && !Style.SpacesInParentheses) ? 0 : 1;
-      else
-        Current->SpacesRequiredBefore = Style.SpacesBeforeTrailingComments;
+      else {
+        if (Current->Previous != nullptr) {
+          int Indent = Style.SpacesBeforeTrailingComments - Current->Previous->TotalLength - Line.Level * Style.IndentWidth;
+          if (Indent > 0) {
+            Current->SpacesRequiredBefore = Indent;
+          } else {
+            Current->SpacesRequiredBefore = 3;
+          }
+        }
+          
+          // Current->Previous->TotalLength
+          // Style.SpacesBeforeTrailingComments;
+      }
 
       // If we find a trailing comment, iterate backwards to determine whether
       // it seems to relate to a specific parameter. If so, break before that
